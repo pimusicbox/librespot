@@ -19,6 +19,7 @@ use std::env;
 use std::io::{self, stderr, Write};
 use std::mem;
 use std::path::PathBuf;
+use std::panic;
 use std::process::exit;
 use std::str::FromStr;
 use tokio_core::reactor::{Core, Handle};
@@ -464,6 +465,12 @@ fn main() {
     if env::var("RUST_BACKTRACE").is_err() {
         env::set_var("RUST_BACKTRACE", "full")
     }
+    let orig_handler = panic::take_hook();
+    panic::set_hook(Box::new(move |panic_info| {
+        // invoke the default handler and exit the process
+        orig_handler(panic_info);
+        exit(1);
+    }));
     let mut core = Core::new().unwrap();
     let handle = core.handle();
 
