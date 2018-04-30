@@ -435,6 +435,7 @@ impl Future for Main {
             }
 
             if let Async::Ready(Some(())) = self.signal.poll().unwrap() {
+                trace!("Ctrl-C received");
                 if !self.shutdown {
                     if let Some(ref spirc) = self.spirc {
                         spirc.shutdown();
@@ -467,6 +468,10 @@ impl Future for Main {
 
             if !progress {
                 return Ok(Async::NotReady);
+            }
+
+            if self.shutdown {
+                return Ok(Async::Ready(()));
             }
         }
     }
